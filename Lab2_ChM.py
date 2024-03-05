@@ -26,32 +26,33 @@ def condition_number(matrix):
     
     return abs(determinant(matrix)) * determinant(inverse_matrix)
 
-# Пример использования функции
-A = [[4, 2, 1],
-     [3, 1, 2],
-     [2, 5, 3]]
+
+A = [[12, 7, 1, 1],
+     [4, 8, 3, 1],
+     [3, 3, 8, 1],
+     [3,1,0,5]]
 
 cond_num = condition_number(A)
 print(f"Число обусловленности матрицы: {cond_num}")
 
 
-# Функция f(x) = 2*x^2 - 5*x + 3
+#Функция f(x) = 2*x^2 - 5*x + 3
 def f(x):
     return 2*x**2 - 5*x + 3
 
-# Производная функции f(x) = 4*x - 5
+#производная функции f(x) = 4*x - 5
 def df(x):
     return 4*x - 5
 
-# Первое достаточное условие: f(a) * f(b) < 0
+#первое достаточное условие: f(a) * f(b) < 0
 def sufficient_condition(a, b):
     return f(a) * f(b) < 0
 
-# Критерий окончания итерационного процесса (анализируем норму разницы)
+#критерий окончания итерационного процесса (анализируем норму разницы)
 def stop_criterion(x, x_prev, epsilon):
     return abs(x - x_prev) < epsilon
 
-# Метод итерации - простая итерация
+#Метод итерации - простая итерация
 def simple_iteration_method(x0, epsilon):
     x = x0
     x_prev = x
@@ -68,24 +69,20 @@ def simple_iteration_method(x0, epsilon):
     
     return x, iterations
 
-# Начальные приближения
+#начальные приближения
 x0_values = [0.5, 1.5, 2.5]
 
-# Точности
+#точности
 eps_values = [1e-2, 1e-3, 1e-4]
-
-# Результаты для каждой точности и начального приближения
+#результаты для каждой точности и начального приближения
 results = {}
-
 for eps in eps_values:
     results[eps] = {}
     for x0 in x0_values:
         root, iterations = simple_iteration_method(x0, eps)
         results[eps][x0] = (root, iterations)
 
-# Графики зависимости количества итераций от нормы разности точного решения и начального приближения
-
-
+#графики зависимости количества итераций от нормы разности точного решения и начального приближения
 for eps in eps_values:
     for x0 in x0_values:
         diffs = []
@@ -98,7 +95,131 @@ for eps in eps_values:
         
         plt.figure()
         plt.plot(diffs, iterations)
-        plt.title(f"Iterations vs. Difference for epsilon = {eps} and x0 = {x0}")
-        plt.xlabel("Difference")
-        plt.ylabel("Iterations")
+        plt.title(f" epsilon = {eps} и x0 = {x0}")
+        plt.xlabel("Разница")
+        plt.ylabel("Итерации")
         plt.show()
+#/////////////////////////////////////
+
+def simple_iteration(A, b, x0, tol=1e-6, max_iter=100):
+
+    n = len(A)
+    x = x0.copy()
+    for _ in range(max_iter):
+        x_new = [0] * n
+        for i in range(n):
+            for j in range(n):
+                if i != j:
+                    x_new[i] -= A[i][j] * x[j]
+            x_new[i] += b[i]
+            x_new[i] /= A[i][i]
+        if max([abs(x_new[i] - x[i]) for i in range(n)]) < tol:
+            return x_new
+        x = x_new
+    return x
+#Метод Гаусса-Зейделя
+
+def gauss_seidel(A, b, x0, tol=1e-6, max_iter=100):
+    n = len(A)
+    x = x0.copy()
+    for _ in range(max_iter):
+        for i in range(n):
+            x[i] = b[i]
+            for j in range(i):
+                x[i] -= A[i][j] * x[j]
+            for j in range(i+1, n):
+                x[i] -= A[i][j] * x[j]
+            x[i] /= A[i][i]
+        if max([abs(x[i] - x0[i]) for i in range(n)]) < tol:
+            return x
+        x0 = x
+    return x
+#Метод Якоби
+
+def jacobi(A, b, x0, tol=1e-6, max_iter=100):
+
+    n = len(A)
+    x = x0.copy()
+    for _ in range(max_iter):
+        x_new = [0] * n
+        for i in range(n):
+            for j in range(n):
+                if i != j:
+                    x_new[i] -= A[i][j] * x[j]
+            x_new[i] += b[i]
+            x_new[i] /= A[i][i]
+        if max([abs(x_new[i] - x[i]) for i in range(n)]) < tol:
+            return x_new
+        x = x_new
+    return x
+
+# Проверка выполнения достаточных условий и критериев сходимости
+
+def check_convergence(A):
+
+    n = len(A)
+    for i in range(n):
+        row_sum = 0
+        for j in range(n):
+            if i != j:
+                row_sum += abs(A[i][j])
+        if abs(A[i][i]) < row_sum:
+            return False
+    return True
+#Ведение расчётов до достижения точности 10^-2, 10^-3, 10^-4
+
+def solve_with_accuracy(A, b, x0, tol, max_iter=100):
+
+    n = len(A)
+    x = x0.copy()
+    iter_count = 0
+    while True:
+        iter_count += 1
+        x_new = [0] * n
+        for i in range(n):
+            for j in range(n):
+                if i != j:
+                    x_new[i] -= A[i][j] * x[j]
+            x_new[i] += b[i]
+            x_new[i] /= A[i][i]
+        if max([abs(x_new[i] - x[i]) for i in range(n)]) < tol:
+            return x_new, iter_count
+        x = x_new
+        if iter_count >= max_iter:
+            return x, iter_count
+#Оценка влияния выбора начального приближения на количество итераций
+
+def plot_convergence(A, b, tol, methods):
+
+    n = len(A)
+    x_exact = gauss_seidel(A, b, [0] * n, tol=1e-10)  
+
+    norms = [i / 10 for i in range(1, 11)]
+    iter_counts = [[0] * len(norms) for _ in range(len(methods))]
+
+    #Итерации по нормам
+    for i, norm in enumerate(norms):
+        #по методам
+        for j, method in enumerate(methods):
+            #по начальным приближениям
+            for k in range(10):
+                x0 = [x_exact[i] + norm * (2 * k - 9) / 10 for i in range(n)]
+                _, iter_count = solve_with_accuracy(A, b, x0, tol)
+                iter_counts[j][i] += iter_count / 10
+
+    #графики
+    for j, method in enumerate(methods):
+        plt.plot(norms, iter_counts[j], label=method)
+    plt.xlabel("Норма разности точного решения и начального приближения")
+    plt.ylabel("Количество итераций")
+    plt.legend()
+    plt.show()
+
+
+#A = [[4, -1, 0], [-1, 4, -1], [0, -1, 4]]
+b = [4, 4, 4,4]
+tol = 1e-4
+methods = ["Простая итерация", "Метод Гаусса-Зейделя", "Метод Якоби"]
+
+plot_convergence(A, b, tol, methods)
+
