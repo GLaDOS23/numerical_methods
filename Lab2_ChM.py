@@ -95,8 +95,8 @@ for eps in eps_values:
         
         plt.figure()
         plt.plot(diffs, iterations)
-        plt.title(f" epsilon = {eps} и x0 = {x0}")
-        plt.xlabel("Разница")
+        plt.title(f" ε = {eps} и x0 = {x0}")
+        plt.xlabel("Нормы разници")
         plt.ylabel("Итерации")
         plt.show()
 #/////////////////////////////////////
@@ -185,6 +185,7 @@ def solve_with_accuracy(A, b, x0, tol, max_iter=100):
         if max([abs(x_new[i] - x[i]) for i in range(n)]) < tol:
             return x_new, iter_count
         x = x_new
+        
         if iter_count >= max_iter:
             return x, iter_count
 #Оценка влияния выбора начального приближения на количество итераций
@@ -209,11 +210,12 @@ def plot_convergence(A, b, tol, methods):
 
     #графики
     for j, method in enumerate(methods):
+        print(method,": ", norms)
         plt.plot(norms, iter_counts[j], label=method)
-    plt.xlabel("Норма разности точного решения и начального приближения")
-    plt.ylabel("Количество итераций")
-    plt.legend()
-    plt.show()
+        plt.xlabel("Норма разности точного решения и начального приближения")
+        plt.ylabel("Количество итераций")
+        plt.legend()
+        plt.show()
 
 
 #A = [[4, -1, 0], [-1, 4, -1], [0, -1, 4]]
